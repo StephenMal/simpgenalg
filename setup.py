@@ -10,10 +10,10 @@ setup(
     packages=find_packages(),
     install_requires=[
         'simptoolbox==0.1.1',\
-        'simplogger==0.2.0',\
-        'simpcfg==0.1.5'
+        'simplogger==0.2.2',\
+        'simpcfg==0.1.7'
     ],
-    extras_require={
+    extras_require  ={
         'scipy':['scipy==1.8.0']
     },
     classifiers=[

@@ -37,6 +37,10 @@ class tournamentSelector(basicSelector):
         track_sel_stats = kargs.get('track_sel_stats', self.track_sel_stats)
         n_sel = kargs.get('nsel', self.nsel)
 
+        if track_nsel:
+            for indv in population:
+                indv.set_attr('n_sel', 0)
+
         # List of winners of the tournaments
         winners = []
 
@@ -71,10 +75,10 @@ class tournamentSelector(basicSelector):
         if track_sel_stats:
             self.log.debug('Adding sel_stats to pop')
             selected_fits = [indv.get_fit() for indv in winners]
-            population.set_popstat('sel_mean',mean(selected_fits))
-            population.set_popstat('sel_stdev',stdev(selected_fits))
-            population.set_popstat('sel_min',min(selected_fits))
-            population.set_popstat('sel_max',max(selected_fits))
+            population.set_popstat('selfit_mean',mean(selected_fits))
+            population.set_popstat('selfit_stdev',stdev(selected_fits))
+            population.set_popstat('selfit_min',min(selected_fits))
+            population.set_popstat('selfit_max',max(selected_fits))
 
         # Return list of the winners
         return winners

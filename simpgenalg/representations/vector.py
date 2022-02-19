@@ -67,8 +67,8 @@ class vectorRepresentation(basicRepresentation):
     def _map(self, chromo):
         return chromo.to_list(return_copy=True)
 
-    def get_mapped(self):
-        return self.get_chromo(return_copy=False).to_list(return_copy=True)
+    def get_mapped(self, return_copy=True):
+        return self.get_chromo(return_copy=False).to_list(return_copy=return_copy)
 
     def copy(self, copy_ID=False):
         if copy_ID:

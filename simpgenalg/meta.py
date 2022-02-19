@@ -36,7 +36,7 @@ class geneticAlgorithm():
         self.log.debug('Initializing geneticAlgorithm')
 
     # Loads the structure of the GA, then runs it and returns results
-    def run(self):
+    def run(self, *args, **kargs):
 
         self.log.info(f'Configuration:\n{self.config}')
         self.log.debug('Called run for geneticAlgorithm')
@@ -59,7 +59,7 @@ class geneticAlgorithm():
         # Run the structure and return the results
         self.log.info('Starting structure')
 
-        return struct.run()
+        return struct.run(*args, **kargs)
 
     #  CFG
     def get_config(self):

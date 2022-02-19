@@ -38,9 +38,11 @@ class basicRepresentation(basicComponent):
         self.log.exception('_map not implemented', err=NotImplementedError)
 
     # Returns chromosome mapped
-    def get_mapped(self):
+    def get_mapped(self, return_copy=True):
         if self.mapped is None or self.get_chromo().get_fit() is None:
             self.mapped = self._map(self.get_chromo())
+        if return_copy:
+            self.mapped.copy()
         return self.mapped
 
     ''' Inheritance '''
@@ -292,6 +294,22 @@ class basicRepresentation(basicComponent):
         ''' Returns next ID '''
         basicRepresentation.last_ID += 1
         return basicRepresentation.last_ID-1
+
+    def to_dict(self, return_copy=True, extract_attrs=False):
+        if extract_attrs:
+            dct = {'ID':self.get_ID(),\
+                    'chromo':self.get_chromo(return_copy=False)\
+                                        .to_list(return_copy=return_copy),\
+                    'mapped':self.get_mapped(return_copy=return_copy),\
+                    'fit':self.get_fit()}
+            dct.update(self.get_attrs())
+            return dct
+        return {'ID':self.get_ID(),\
+                'chromo':self.get_chromo(return_copy=False)\
+                                    .to_list(return_copy=return_copy),\
+                'mapped':self.get_mapped(return_copy=return_copy),\
+                'fit':self.get_fit(),\
+                'attrs':self.get_attrs(return_copy=return_copy)}
 
 class basicRepresentation_unittest(unittest.TestCase):
 

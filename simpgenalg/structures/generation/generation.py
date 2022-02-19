@@ -2,6 +2,7 @@ from .gen_rslts import allResults, runResults, genResults
 from .op_app import operatorApplicator
 from ..basics import basicStructure
 from ...selectors.basics import basicSelector
+from ...other import basicComponent
 
 class generationStructure(basicStructure):
 
@@ -20,11 +21,15 @@ class generationStructure(basicStructure):
                                 toolbox=self.toolbox)
 
         # Basic parameters
-        n_runs = kargs.get('n_runs',kargs.get('n', 1))
+        n_runs = kargs.get('n_runs',kargs.get('n', \
+                                self.config.get('n_runs',1,dtype=int, mineq=1)))
         n_gens = self.config.get('n_gens',200,dtype=int,mineq=1)
         cmpr_map_dist = self.config.get('cmpr_map_dist', False, dtype=bool)
-        tracking_vars = self.config.get('tracking_vars',('fit_mean','fit_stdev'))
 
+        # Figure out what variables we are tracking and printing
+        tracking_vars = self.config.get('tracking_vars',('fit.mean','fit.stdev'))
+        if isinstance(tracking_vars, str): # If just single str, turn into tuple
+            tracking_vars = (tracking_vars)
 
         self.log.info(f'Starting generationStructure for {n_runs} runs')
 
@@ -44,12 +49,17 @@ class generationStructure(basicStructure):
 
         # Iterate through number of runs
         for run in range(n_runs):
-            self.log.info(f'Starting run #{run}/{n_runs}')
+            self.log.info(f'Starting run #{run+1}/{n_runs}')
 
             # Creates object to store resutls for the current run
             run_results = runResults(log=self.log,\
                                      config=self.config,\
                                      toolbox=self.toolbox)
+
+            # Generate the parent population
+            self.log.info('Initializing first population')
+            parents.generate()
+            children.generate()
 
             # Iterate through generations
             for gen in range(n_gens+1):
@@ -65,9 +75,9 @@ class generationStructure(basicStructure):
                 selected = selector.select(parents)
 
                 # Store current results
-                run_results.append(pop_stats=parents.get_popstats(),\
-                                   indv_attrs=parents.get_indv_attrs())
-                self.log.info(run_results[-1].get_gen_strs(*tracking_vars,round=2))
+                run_results.append(pop_dct=parents.pop_to_dict_of_lists())
+                self.log.info(f'Gen:{gen+1}\t' + \
+                        run_results[-1].get_gen_strs(*tracking_vars,round=2))
 
                 # Crete next generation (if not last generation)
                 if gen != n_gens:
@@ -77,9 +87,12 @@ class generationStructure(basicStructure):
                     # Swap the children and parents
                     parents, children = children, parents
 
+            # Adds last runs' results
+            all_results.append(run_results)
+
             # Clear objects for restart
             clear()
-        return
+        return all_results
 
 
     def _setup_components(self):
@@ -89,7 +102,7 @@ class generationStructure(basicStructure):
                 return self.toolbox[val](log=self.log,\
                                          config=self.config,\
                                          toolbox=self.toolbox)
-            elif isinstance(val, (basicSelector)):
+            elif isinstance(val, (basicComponent)):
                 return val(*args, log=self.log,\
                            config=self.config,\
                            toolbox=self.toolbox,\
@@ -98,12 +111,12 @@ class generationStructure(basicStructure):
                 self.log.exception('Passed a bad value',err=ValueError)
 
         selector = convert(self.config.get('selector','tournament',\
-                                    dtype=(basicSelector,str)))
+                                    dtype=(basicComponent,str)))
         evaluator = convert(self.config.get('evaluator','custom',\
-                                    dtype=(str)))
+                                    dtype=(basicComponent, str)))
         parents = convert(self.config.get('population','fixed',\
-                                    dtype=(str)))
+                                    dtype=(basicComponent, str)), generate=False)
         children = convert(self.config.get('population','fixed',\
-                                    dtype=(str)), generate=False)
+                                    dtype=(basicComponent, str)), generate=False)
 
         return selector, evaluator, parents, children

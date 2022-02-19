@@ -14,7 +14,6 @@ class basicChromo(basicComponent):
         super().__init__(*args, **kargs)
 
         ''' Initializes basic chromo '''
-        # Creates log
         self.max = kargs.get('max',None)
         self.min = kargs.get('min',None)
         self.dtype = kargs.get('dtype',None)

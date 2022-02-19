@@ -213,3 +213,19 @@ class basicPopulation(basicComponent):
                                     err=KeyError)
         elif isinstance(self.rep, basicRepresentation):
             return
+
+    # Combines individuals' dicts into one dict where they are organized by lists
+    def pop_to_dict_of_lists(self, return_copy=True, extract_attrs=True):
+        # Create dictionary to store all values of basic population
+        dct, keys = dict(), set()
+        # Iterates through the individual dictionaries
+        for num, indv_dct in enumerate([indv.to_dict(return_copy=return_copy, \
+                                         extract_attrs=extract_attrs) \
+                                         for indv in self.poplst]):
+            # Update list of keyes
+            keys.update(indv_dct.keys())
+            # Iterates through all keys found so far and appends them in
+            for key in keys:
+                # Create the list or get the list and add to it
+                dct.setdefault(key, [None]*num).append(indv_dct.get(key, None))
+        return dct

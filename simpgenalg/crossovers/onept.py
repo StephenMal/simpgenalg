@@ -7,7 +7,19 @@ class onePointCrossover(basicCrossover):
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
+        self.track_xov = kargs.get('track_xov', \
+                                    self.config.get('track_xov',True,dtype=bool))
+
+        self.track_split_pt = kargs.get('track_split_pt', \
+                                        self.config.get('track_split_pt',True,\
+                                                            dtype=bool))
+
+
     def cross_parents(self, parents=None, children=None, **kargs):
+
+        # Get params
+        track_xov = kargs.get('track_xov', self.track_xov)
+        track_split_pt = kargs.get('track_split_pt', self.track_split_pt)
 
         # Verify correct input
         if not isinstance(parents, (tuple, list)) or len(parents) != 2:
@@ -34,13 +46,33 @@ class onePointCrossover(basicCrossover):
             # Create chromosomes and inherit information from parents
             children[0].inherit(p1c[:split_pt]+p2c[split_pt:],\
                                 parents[0],parents[1])
+
             children[1].inherit(p2c[:split_pt]+p1c[split_pt:],\
                                 parents[0],parents[1])
+
+            if track_xov:
+                children[0].set_attr('xov', True)
+                children[1].set_attr('xov', True)
+            if track_split_pt:
+                children[0].set_attr('split_pt', split_pt/len(p1))
+                children[1].set_attr('split_pt', split_pt/len(p1))
+
         else: # Otherwise we are directly inheriting
             children[0].inherit(p1c, parent[0])
             children[1].inherit(p2c, parent[1])
 
+            if track_xov:
+                children[0].set_attr('xov', False)
+                children[1].set_attr('xov', False)
+            if track_split_pt:
+                children[0].set_attr('split_pt', None)
+                children[1].set_attr('split_pt', None)
+
     def cross_batch(self, parents=None, children=None, **kargs):
+
+        # Get params
+        track_xov = kargs.get('track_xov', self.track_xov)
+        track_split_pt = kargs.get('track_split_pt', self.track_split_pt)
 
         # Verify correct input
         if not isinstance(parents, (tuple, list, basicPopulation)) or  \
@@ -71,6 +103,22 @@ class onePointCrossover(basicCrossover):
                 split_pt = random.randint(0,len(p1c))
                 c1.inherit(p1c[:split_pt]+p2c[split_pt:], p1, p2)
                 c2.inherit(p2c[:split_pt]+p1c[split_pt:], p1, p2)
+
+                if track_xov:
+                    c1.set_attr('xov', True)
+                    c2.set_attr('xov', True)
+                if track_split_pt:
+                    c1.set_attr('split_pt', split_pt/len(p1))
+                    c2.set_attr('split_pt', split_pt/len(p1))
+
             else:
+
                 c1.inherit(p1.get_chromo(), p1)
                 c2.inherit(p2.get_chromo(), p2)
+
+                if track_xov:
+                    c1.set_attr('xov', False)
+                    c2.set_attr('xov', False)
+                if track_split_pt:
+                    c1.set_attr('split_pt', None)
+                    c2.set_attr('split_pt', None)

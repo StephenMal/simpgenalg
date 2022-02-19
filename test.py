@@ -1,5 +1,3 @@
-
-
 from simpgenalg import geneticAlgorithm
 
 def num_matching(lst):
@@ -16,12 +14,6 @@ ga = geneticAlgorithm(function=num_matching,\
                       maximize=False,
                       cmpr_map_dist=False)
 
-ga.run()
-'''
+rslts = ga.run(n=2)
 
-import csv
-with open('test2.csv', 'r') as F:
-    reader = csv.DictReader(F)
-    for row in reader:
-        print(row)
-'''
+rslts.to_df().to_csv('results_test.csv')

@@ -14,7 +14,7 @@ class functionEvaluator(basicEvaluator):
     def evaluate(self, indv, **kargs):
 
         # Try reading the cache
-        fit = self.get_cache(indv)
+        fit = self.get_cache(tuple(indv.get_mapped()))
 
         # If fit is none, apply to function
         if fit is None:
@@ -25,7 +25,7 @@ class functionEvaluator(basicEvaluator):
             else:
                 fit = self.function(indv)
             # Save in cache
-            self.set_cache(indv, fit)
+            self.set_cache(tuple(indv.get_mapped()), fit)
         # Set fitness in individual
         indv.set_fit(fit)
         # Replace the current tracked best if so
