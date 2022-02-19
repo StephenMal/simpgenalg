@@ -9,9 +9,9 @@ setup(
     author_email='simpgenalg@stephenmal.com',
     packages=find_packages(),
     install_requires=[
-        'simptoolbox==0.1.1',\
+        'simptoolbox==0.1.2',\
         'simplogger==0.2.2',\
-        'simpcfg==0.1.7'
+        'simpcfg==0.1.8'
     ],
     extras_require  ={
         'scipy':['scipy==1.8.0']
