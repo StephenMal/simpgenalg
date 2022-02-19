@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='simpgenalg',
-    version='0.1.0',
+    version='0.1.1',
     description='Genetic Algorithm',
     url='https://github.com/StephenMal/simpgenalg',
     author='Stephen Maldonado',
