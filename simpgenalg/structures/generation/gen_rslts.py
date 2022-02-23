@@ -1,5 +1,6 @@
 from ...other import basicComponent
 from statistics import mean, stdev, median
+from math import sqrt
 
 import sys
 
@@ -45,19 +46,25 @@ class allResults(basicComponent):
 
     def to_dict(self, *args, **kargs):
         if len(args) == 0:
-            dct = {'_run':[]}
+            pop_dct = {'_run':[]}
+            pop_stats_dct = {'_run':[]}
             # Tracks number of entries (so if new variable shows up we stay consist)
             entries = 0
             # Iterate through generations
             for run_num, run in enumerate(self.runs):
                 # Add gen number, one per population
-                dct['_run'].extend([run_num]*run.get_num_entries())
+                run_dct = run.to_dict()
                 # Extend the lists
-                for key, lst in run.to_dict().items():
-                    dct.setdefault(key, [None]*entries).extend(lst)
+                for key, lst in run_dct['pop_dct'].items():
+                    pop_dct.setdefault(key, [None]*entries).extend(lst)
+                for key, item in run_dct['pop_stats'].items():
+                    pop_stats_dct.setdefault(key, \
+                                [None]*len(pop_stats_dct['_run'])).extend(item)
+                pop_dct['_run'].extend([run_num]*run.get_num_entries())
+                pop_stats_dct['_run'].extend([run_num]*len(run))
                 # Add num of generations to number of entries
                 entries += len(run)
-            return dct
+            return {'pop_dct':pop_dct, 'pop_stats':pop_stats_dct}
         elif len(args) == 1 and isinstance(args[0], (list, tuple)):
                 if len(args[0]) == 1 and isinstance(args[0][0], int):
                     return self.__getitem__(args[0][0]).to_dict()
@@ -76,7 +83,14 @@ class allResults(basicComponent):
         if 'pandas' not in sys.modules:
             self.log.exception('Pandas needs to be installed to get dataframe',\
                                     err=ModuleNotFoundError)
-        return pd.DataFrame(self.to_dict())
+        dct = self.to_dict()
+        return pd.DataFrame(dct['pop_dct']), pd.DataFrame(dct['pop_stats'])
+
+    def get_best(self):
+        return self.best
+
+    def get_best_fnd_gen(self):
+        return self.gen_fnd
 
 
 class runResults(basicComponent):
@@ -119,10 +133,9 @@ class runResults(basicComponent):
             self.best = self.gens[-1].get_best()
             self.gen_fnd = len(self.gens)-1
         elif self.maximize:
-            if self.best < cur_bst['fit']:
-                self.best['fit'] = cur_bst.copy()
+            if self.best['fit'] < cur_bst['fit']:
+                self.best = cur_bst.copy()
                 self.gen_fnd = len(self.gens)-1
-
         else:
             if self.best['fit'] > cur_bst['fit']:
                 self.best = cur_bst.copy()
@@ -130,26 +143,35 @@ class runResults(basicComponent):
 
 
     def to_dict(self, **kargs):
-        dct = {'_gen':[]}
+        pop_dct, pop_stats = {'_gen':[]}, {'_gen':[]}
         # Tracks number of entries (so if new variable shows up we stay consist)
         entries = 0
         # Iterate through generations
         for gen_num, gen in enumerate(self.gens):
-            # Add gen number, one per population
-            dct['_gen'].extend([gen_num]*gen.get_size())
+            gen_dct = gen.to_dict()
             # Extend the lists
-            for key, lst in gen.to_dict().items():
-                dct.setdefault(key, [None]*entries).extend(lst)
+            for key, lst in gen_dct['pop_dct'].items():
+                pop_dct.setdefault(key, [None]*entries).extend(lst)
+            # Appends the lists
+            for key, item in gen_dct['pop_stats'].items():
+                pop_stats.setdefault(key, [None]*len(pop_stats['_gen'])).append(item)
+
+            # Add gen number, one per population
+            pop_dct['_gen'].extend([gen_num]*gen.get_size())
+            pop_stats['_gen'].append(gen_num)
+
             # Add pop size to number of entries
             entries += gen.get_size()
-        return dct
+
+        return {'pop_dct':pop_dct, 'pop_stats':pop_stats}
 
 
     def to_df(self):
         if 'pandas' not in sys.modules:
             self.log.exception('Pandas needs to be installed to get dataframe',\
                                     err=ModuleNotFoundError)
-        return pd.DataFrame(self.to_dict())
+        dct = self.to_dict()
+        return pd.DataFrame(dct['pop_dct']), pd.DataFrame(dct['pop_stats'])
 
     def get_num_gens(self):
         return len(self.gens)
@@ -168,11 +190,12 @@ class runResults(basicComponent):
 
 class genResults(basicComponent):
 
-    __slots__ = ('pop_dct', 'size', 'best', 'maximize')
+    __slots__ = ('pop_dct', 'pop_stat_dct', 'size', 'best', 'maximize')
 
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
         self.pop_dct = kargs.get('pop_dct', None)
+        self.pop_stat_dct = kargs.get('pop_stat_dct', {})
 
         # Verify all lengths are the same
         length = None
@@ -200,7 +223,8 @@ class genResults(basicComponent):
             self.best[key] = lst[bst_indx]
 
     # Calculate statistics based off the pop dictionary
-    def calc_stats(self, *args, incl_corrs=False, corr_type='pearson'):
+    def calc_stats(self, *args, incl_corrs=False, corr_type='pearson', **kargs):
+
         # Dictionary of stats
         stats = {}
 
@@ -213,48 +237,73 @@ class genResults(basicComponent):
 
             # Get the list
             lst = self.pop_dct.get(key)
+            # Remove any Nones
+            if None in lst:
+                lst = [val for val in lst if val is not None]
+
             # Skip if not an integer, float, or bool
             if isinstance(lst[0], (bool)):
                 lst = [1 if item else 0 for item in lst]
             elif not isinstance(lst[0], (int, float)):
                 continue
 
+
             try: # Find the mean
                 stats[f'{key}.mean'] = mean(lst)
             except:
-                pass
+                stats[f'{key}.mean'] = None
 
             try: # Find the median
                 stats[f'{key}.median'] = median(lst)
             except:
-                pass
+                stats[f'{key}.median'] = None
+
 
             try: # Find the standard deviation
                 stats[f'{key}.stdev'] = stdev(lst)
             except:
-                pass
+                stats[f'{key}.stdev'] = None
+
+            try: # Returns count of item
+                stats[f'{key}.count'] = len(lst)
+            except:
+                stats[f'{key}.count'] = None
+
+            try: # Find the 95 CI
+                stats[f'{key}.95CI'] = \
+                    1.96*(stats[f'{key}.stdev'] / sqrt(stats[f'{key}.count']))
+                stats[f'{key}.95CI_upper'] = \
+                    stats[f'{key}.mean']+stats[f'{key}.95CI']
+                stats[f'{key}.95CI_lower'] = \
+                    stats[f'{key}.mean']-stats[f'{key}.95CI']
+            except:
+                stats[f'{key}.95CI'] = None
+                stats[f'{key}.95CI_upper'] = None
+                stats[f'{key}.95CI_lower'] = None
 
             try: # Find the minimum of the lst
                 stats[f'{key}.min'] = min(lst)
             except:
-                pass
+                stats[f'{key}.min'] = None
 
             try: # Find the maximum of the lst
                 stats[f'{key}.max'] = max(lst)
             except:
-                pass
+                stats[f'{key}.max'] = None
 
             try: # Find the range of the lst
                 stats[f'{key}.range'] = \
                     stats[f'{key}.max'] - stats[f'{key}.min']
             except:
-                pass
+                stats[f'{key}.range'] = None
 
         # Adds correlation data if requested
         if incl_corrs:
             stats.update(self.calc_corr(flatten=True, corr_type=corr_type))
 
-        return stats
+        self.pop_stat_dct.update(stats)
+
+        return self.pop_stat_dct
 
     # Generates a list of strings
     def get_gen_strs(self, *args, **kargs):
@@ -266,13 +315,13 @@ class genResults(basicComponent):
                                 if key in args])
 
     def to_dict(self):
-        return self.pop_dct.copy()
+        return {'pop_dct':self.pop_dct.copy(), 'pop_stats':self.pop_stat_dct.copy()}
 
     def to_df(self):
         if 'pandas' not in sys.modules:
             self.log.exception('Pandas needs to be installed to get dataframe',\
                                     err=ModuleNotFoundError)
-        return pd.DataFrame(self.pop_dct)
+        return pd.DataFrame(self.pop_dct), pd.DataFrame(self.pop_stat_dct)
 
     def __getitem__(self, key):
         return self.pop_dct.__getitem__(key)

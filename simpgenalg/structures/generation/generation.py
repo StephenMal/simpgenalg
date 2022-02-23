@@ -27,7 +27,8 @@ class generationStructure(basicStructure):
         cmpr_map_dist = self.config.get('cmpr_map_dist', False, dtype=bool)
 
         # Figure out what variables we are tracking and printing
-        tracking_vars = self.config.get('tracking_vars',('fit.mean','fit.stdev'))
+        tracking_vars = self.config.get('tracking_vars',\
+                                ('fit.max', 'fit.min', 'fit.mean','fit.stdev'))
         if isinstance(tracking_vars, str): # If just single str, turn into tuple
             tracking_vars = (tracking_vars)
 
@@ -62,7 +63,7 @@ class generationStructure(basicStructure):
             children.generate()
 
             # Iterate through generations
-            for gen in range(n_gens+1):
+            for gen in range(0, n_gens):
 
                 # Evaluate the parents
                 evaluator.evaluate_batch(parents)
@@ -75,7 +76,10 @@ class generationStructure(basicStructure):
                 selected = selector.select(parents)
 
                 # Store current results
-                run_results.append(pop_dct=parents.pop_to_dict_of_lists())
+                run_results.append(pop_dct=parents.pop_to_dict_of_lists(),\
+                                        pop_stat_dct=parents.get_popstats(\
+                                                        return_copy=True,\
+                                                        compile_indv_attrs=False))
                 self.log.info(f'Gen:{gen+1}\t' + \
                         run_results[-1].get_gen_strs(*tracking_vars,round=2))
 
@@ -102,21 +106,17 @@ class generationStructure(basicStructure):
                 return self.toolbox[val](log=self.log,\
                                          config=self.config,\
                                          toolbox=self.toolbox)
-            elif isinstance(val, (basicComponent)):
+            else:
                 return val(*args, log=self.log,\
                            config=self.config,\
                            toolbox=self.toolbox,\
                            **kargs)
-            else:
-                self.log.exception('Passed a bad value',err=ValueError)
 
-        selector = convert(self.config.get('selector','tournament',\
-                                    dtype=(basicComponent,str)))
-        evaluator = convert(self.config.get('evaluator','custom',\
-                                    dtype=(basicComponent, str)))
-        parents = convert(self.config.get('population','fixed',\
-                                    dtype=(basicComponent, str)), generate=False)
-        children = convert(self.config.get('population','fixed',\
-                                    dtype=(basicComponent, str)), generate=False)
+        evaluator = convert(self.config.get('evaluator','custom'))
+        selector = convert(self.config.get('selector','tournament'))
+        parents = convert(self.config.get('population','fixed'), \
+                                        generate=False)
+        children = convert(self.config.get('population','fixed'), \
+                                        generate=False)
 
         return selector, evaluator, parents, children

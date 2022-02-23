@@ -20,8 +20,7 @@ class functionEvaluator(basicEvaluator):
         if fit is None:
             # send list or indv depending on confing
             if self.send_list:
-                fit = self.function(\
-                            indv.get_chromo(return_copy=False).to_list())
+                fit = self.function(indv.get_mapped())
             else:
                 fit = self.function(indv)
             # Save in cache

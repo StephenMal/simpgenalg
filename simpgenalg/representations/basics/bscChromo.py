@@ -16,11 +16,18 @@ class basicChromo(basicComponent):
         ''' Initializes basic chromo '''
         self.max = kargs.get('max',None)
         self.min = kargs.get('min',None)
+
+        if self.max is not None and self.min is not None:
+            if self.max <= self.min:
+                self.log.exception('Max cannot be <= min', err=ValueError)
+
         self.dtype = kargs.get('dtype',None)
 
         self.lenLim = kargs.get('lenLim', None)
-        if 'len' in kargs:
-            self.lenLim = (kargs.get('len'), kargs.get('len'))
+        if self.lenLim is None and 'len' in kargs or \
+                                ('lenmin' in kargs or 'lenmax' in kargs):
+            self.lenLim = (kargs.get('lenmin',kargs.get('len')),\
+                           kargs.get('lenmin',kargs.get('len')))
         self.vals = kargs.get('vals',None)
         self.fit = kargs.get('fit',None)
         self.hsh = kargs.get('hsh',None)
@@ -28,8 +35,6 @@ class basicChromo(basicComponent):
     ''' Chromosome Generation '''
     ''' Generates a list of random chromosome values '''
     def generate(self):
-        self.set_fit(None)
-        self.set_hash(None)
         if self.lenLim[0] is None or self.lenLim[1] is None:
             self.log.exception('Tried to generate chromosome without length '+\
                                 'limited', err=ValueError)
@@ -41,13 +46,12 @@ class basicChromo(basicComponent):
         elif self.lenLim[0] != self.lenLim[1]:
             length = random.randint(self.lenLim[0], self.lenLim[1])
 
-
         if self.dtype is int:
-            self.vals = [random.randint(self.get_min(indx),self.get_max(indx))\
-                            for indx in range(self.lenLim[0])]
+            self.set_chromo([random.randint(self.get_min(indx),self.get_max(indx))\
+                            for indx in range(length)])
         elif self.dtype is float:
-            self.vals = [random.uniform(self.get_min(indx),self.get_max(indx))\
-                            for indx in range(self.lenLim[0])]
+            self.set_chromo([random.uniform(self.get_min(indx),self.get_max(indx))\
+                            for indx in range(length)])
         else:
             self.log.exception('dtype should be int or float, was '+\
                 f'{self.dtype}', err=TypeError)
@@ -80,9 +84,10 @@ class basicChromo(basicComponent):
                                    f'{self.get_max(indx)}',err=ValueError)
         return
 
-    def set_chromo(self, lst, validate=True):
-        self.set_fit(None)
-        self.set_hash(None)
+    def set_chromo(self, lst, validate=True, clear_fit=True):
+        if clear_fit:
+            self.set_fit(None)
+            self.set_hash(None)
         if validate:
             self._validate(vals=lst)
         self.vals = lst.copy()
@@ -214,17 +219,6 @@ class basicChromo(basicComponent):
                             fit = self.fit, \
                             hsh = self.hsh)
 
-        self.max = kargs.get('max',None)
-        self.min = kargs.get('min',None)
-        self.dtype = kargs.get('dtype',None)
-
-        self.lenLim = kargs.get('lenLim', None)
-        if 'len' in kargs:
-            self.lenLim = (kargs.get('len'), kargs.get('len'))
-        self.vals = kargs.get('vals',None)
-        self.fit = kargs.get('fit',None)
-        self.hsh = kargs.get('hsh',None)
-
     def __copy__(self):
         return self.copy()
 
@@ -305,6 +299,12 @@ class basicChromo(basicComponent):
     ''' Returns length of chromosome '''
     def __len__(self):
         return self.vals.__len__()
+    def get_lenmin(self):
+        return self.lenLim[0]
+    def get_lenmax(self):
+        return self.lenLim[1]
+    def get_lenrange(self):
+        return self.lenLim[1] - self.lenLim[0]
     # Returns iterator
     def __iter__(self):
         return self.vals.__iter__()

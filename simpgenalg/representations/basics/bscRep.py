@@ -39,17 +39,18 @@ class basicRepresentation(basicComponent):
 
     # Returns chromosome mapped
     def get_mapped(self, return_copy=True):
-        if self.mapped is None or self.get_chromo().get_fit() is None:
-            self.mapped = self._map(self.get_chromo())
+        if self.mapped is None or self.get_chromo(return_copy=False).get_fit() is None:
+            self.mapped = self._map(self.get_chromo(return_copy=False))
         if return_copy:
             self.mapped.copy()
         return self.mapped
 
     ''' Inheritance '''
     # Sets chromosome
-    def set_chromo(self, new_chromo, set_copy=False):
+    def set_chromo(self, new_chromo, set_copy=False, clear_attrs=True):
         if isinstance(new_chromo, list):
-            self.get_chromo(return_copy=False).set_chromo(new_chromo)
+            self.get_chromo(return_copy=False).set_chromo(new_chromo,\
+                                                        clear_fit=clear_attrs)
         elif isinstance(new_chromo, basicChromo):
             if not set_copy:
                 self.chromo = new_chromo
@@ -59,18 +60,18 @@ class basicRepresentation(basicComponent):
             self.log.exception('Attempted to set a chromo without a proper '+\
                                'chromosome', err=TypeError)
 
-        self.clear_attrs()
-        self.set_fit(None)
+        if clear_attrs:
+            self.clear_attrs()
+            self.set_fit(None)
 
 
     # Fancy inheriting, accepts new chromo and then compiles information from
     #   parents
     def inherit(self, new_chromo, *parents):
-        # Set new chromo
         self.set_chromo(new_chromo)
-
         # Adds informatoin about the parents
         if len(parents) == 1:
+            # Set new chromo
             pfit = parents[0].get_fit()
             p_ID = parents[0].get_ID()
             plen = len(parents[0])
@@ -90,7 +91,7 @@ class basicRepresentation(basicComponent):
         elif len(parents) > 1:
             # Get some values from parents
             pfits = [parent.get_fit() for parent in parents]
-            plens = [len(parent.get_chromo()) for parent in parents]
+            plens = [len(parent.get_chromo(return_copy=False)) for parent in parents]
             min_pfit, max_pfit = min(pfits), max(pfits)
             min_plen, max_plen = min(plens), max(plens)
             self.update_attrs({'pfits':pfits,\
@@ -130,7 +131,7 @@ class basicRepresentation(basicComponent):
         if isinstance(other, basicRepresentation):
             return (self.get_mapped().__eq__(other.get_mapped()))
         if isinstance(other, basicChromo):
-            retrurn (self.get_chromo().__eq__(other))
+            return (self.get_chromo(return_copy=False).__eq__(other))
         elif isinstance(other, (int, float)):
             return self.get_fit().__eq__(other)
         else:
@@ -193,7 +194,13 @@ class basicRepresentation(basicComponent):
                            err=TypeError)
     # Sees if fitnesses are less than, can take int, float, or individual
     def __lt__(self, other):
-        if isinstance(other, basicRepresentation):
+        if self.get_fit() is None:
+            self.log.exception('Cannot compare indv with no fit', err=ValueError)
+        if other is None:
+            self.log.exception('Cannot compare indv with None', err=TypeError)
+        elif isinstance(other, basicRepresentation):
+            if other.get_fit() is None:
+                self.log.exception('Cannot compare indv with no fit', err=ValueError)
             return (self.get_fit().__lt__(other.get_fit()))
         elif isinstance(other, (int, float)):
             return (self.get_fit().__lt__(other))
@@ -222,7 +229,7 @@ class basicRepresentation(basicComponent):
     ''' Utility '''
     # Returns hash of contained mapped chromosome
     def __hash__(self):
-        if self.mapped is None or self.get_chromo().get_fit() is None:
+        if self.mapped is None or self.get_chromo(return_copy=False).get_fit() is None:
             self.hsh = tuple(self.get_mapped()).__hash__()
         return self.hsh
     def set_hash(self, new_hash):
@@ -279,7 +286,7 @@ class basicRepresentation(basicComponent):
                                err=ValueError)
 
     def add_len_to_attrs(self):
-        self.set_attr('chromo_len', self.get_chromo().__len__())
+        self.set_attr('chromo_len', self.get_chromo(return_copy=False).__len__())
 
     def del_attr(self, attr_name):
         del self.attrs[attr_name]

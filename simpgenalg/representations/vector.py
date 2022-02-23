@@ -3,41 +3,30 @@ import unittest, random, logging
 
 class fixedVectorChromo(basicChromo):
 
-    __slots__ = ('length')
-
     def __init__(self, *args, **kargs):
 
         super().__init__(self, *args, **kargs)
-
         if 'len_min' in kargs or 'len_max' in kargs:
             raise ValueError('Should not include len_min or len_max for '+\
                              'fixedVectorChromo')
 
         # if values are none from basicChromo init than use config
-        self.length = self.config.get('len',dtype=int, mineq=1)
-        self.lenLim = self.lenLim if self.lenLim is not None else \
-                        (self.length, self.length)
-        self.max = self.max if self.max is not None else \
-                        self.config.get('chr_max')
-        self.min = self.min if self.min is not None else \
-                        self.config.get('chr_min')
+        if self.lenLim is None:
+            num_genes = self.config.get('num_genes')
+            self.lenLim = (num_genes, num_genes)
         self.dtype = self.dtype if self.dtype is not None else \
-                        self.config.get('dtype',int)
+                        self.config.get('dtype', options=(int, float))
+        self.max = self.max if self.max is not None else \
+                        self.config.get('max')
+        self.min = self.min if self.min is not None else \
+                        self.config.get('min')
 
-        if kargs.get('generate', True):
+        if self.max is not None and self.min is not None:
+            if self.max <= self.min:
+                self.log.exception('Max cannot be <= min', err=ValueError)
+
+        if 'vals' not in kargs and kargs.get('generate', True):
             self.generate()
-
-    def generate(self):
-        ''' Generates a list of random chromosome values '''
-        if self.dtype is int:
-            self.vals = [random.randint(self.get_min(indx),self.get_max(indx))\
-                            for indx in range(self.length)]
-        elif self.dtype is float:
-            self.vals = [random.uniform(self.get_min(indx),self.get_max(indx))\
-                            for indx in range(self.length)]
-        else:
-            self.log.exception('dtype should be int or float, was '+\
-                f'{self.dtype}', err=TypeError)
 
     def append(self, item):
         self.log.exception('Cannot append to a fixedVectorChromo',\
@@ -55,10 +44,19 @@ class fixedVectorChromo(basicChromo):
         self.log.exception('Cannot pop from a fixedVectorChromo',\
                            err=NotImplementedError)
 
+    # Returns a copy of this chromosome
+    def copy(self):
+        return fixedVectorChromo(vals = self.to_list(return_copy=True),\
+                                    max = self.max,\
+                                    min = self.min,\
+                                    dtype = self.dtype, \
+                                    lenLim = self.lenLim, \
+                                    fit = self.fit, \
+                                    hsh = self.hsh)
+
 class vectorRepresentation(basicRepresentation):
 
     def __init__(self, *args, **kargs):
-
         super().__init__(*args, **kargs)
 
         if 'chromo' not in kargs:
@@ -71,18 +69,20 @@ class vectorRepresentation(basicRepresentation):
         return self.get_chromo(return_copy=False).to_list(return_copy=return_copy)
 
     def copy(self, copy_ID=False):
+        chromo_copy = self.get_chromo(return_copy=True)
         if copy_ID:
-            return vectorRepresentation(log=self.log,\
+            test = vectorRepresentation(log=self.log,\
                                     chromo=self.get_chromo(return_copy=True),\
                                     fit=self.get_fit(),\
                                     attrs=self.get_attrs(return_copy=True),\
                                     len=self.get_chromo().__len__(),\
                                     ID=self.get_ID())
-        return vectorRepresentation(log_name=self.log.getLogKey(),\
+        test = vectorRepresentation(log_name=self.log.getLogKey(),\
                                 chromo=self.get_chromo(return_copy=True),\
                                 fit=self.get_fit(),\
                                 attrs=self.get_attrs(return_copy=True),\
                                 len=self.get_chromo().__len__())
+        return test
 
 
 class fixedVectorChromo_unittest(unittest.TestCase):

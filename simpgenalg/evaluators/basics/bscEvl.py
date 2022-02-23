@@ -43,7 +43,7 @@ class basicEvaluator(basicComponent):
 
     def evaluate_batch(self, btch, **kargs):
         for indv in btch:
-            self.evaluate(btch, **kargs)
+            self.evaluate(indv, **kargs)
 
     def compare_mapped_distance(self, pop):
         if 'scipy' not in sys.modules:
