@@ -11,7 +11,7 @@ setup(
     install_requires=[
         'simptoolbox==0.1.2',\
         'simplogger==0.2.2',\
-        'simpcfg==0.2.0'
+        'simpcfg==0.2.1'
     ],
     extras_require  ={
         'scipy':['scipy==1.8.0'],
