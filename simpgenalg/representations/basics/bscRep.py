@@ -9,7 +9,7 @@ class basicRepresentation(basicComponent):
 
     last_ID = 0
 
-    __slots__ = ('chromo', 'mapped', 'ID', 'attrs', 'hsh')
+    __slots__ = ('chromo', 'mapped', 'ID', 'attrs', 'hsh', 'val_min', 'val_max')
 
     def __init__(self, *args, **kargs):
 
@@ -23,6 +23,9 @@ class basicRepresentation(basicComponent):
         self.attrs = kargs.get('attrs', {})
 
         self.hsh = kargs.get('hsh', None)
+
+        self.val_min = kargs.get('val_min', None)
+        self.val_max = kargs.get('val_max', None)
 
     ''' chromosome '''
     # Returns chromosome
@@ -44,6 +47,14 @@ class basicRepresentation(basicComponent):
         if return_copy:
             self.mapped.copy()
         return self.mapped
+
+    # Returns min/max/range of values encodable post mapping
+    def get_valmin(self):
+        return self.val_min
+    def get_valmax(self):
+        return self.val_max
+    def get_valrange(self):
+        return self.val_max - self.val_min
 
     ''' Inheritance '''
     # Sets chromosome
@@ -244,11 +255,15 @@ class basicRepresentation(basicComponent):
                                       chromo=self.get_chromo(return_copy=True),\
                                       fit=self.get_fit(),\
                                       attrs=self.get_attrs(return_copy=True),\
-                                      ID=self.get_ID())
+                                      ID=self.get_ID(),\
+                                      val_min=self.get_valmin(),\
+                                      val_max=self.get_valmax())
         return basicRepresentation(log_name=self.log.getLogKey(),\
                                    chromo=self.get_chromo(return_copy=True),\
                                    fit=self.get_fit(),\
-                                   attrs=self.get_attrs(return_copy=True))
+                                   attrs=self.get_attrs(return_copy=True),\
+                                   val_min=self.get_valmin(),\
+                                   val_max=self.get_valmax())
     def __copy__(self):
         return self.copy()
 

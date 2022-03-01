@@ -11,7 +11,7 @@ vga_params = dict(function=num_matching,\
                   dtype=int, \
                   max=10, \
                   min=0, \
-                  xov_op='twopt',\
+                  xov_op='uniform_crossover',\
                   mut_op='uniform_mutation',\
                   mut_rate=0.1,\
                   xov_rate=0.8,
@@ -30,6 +30,26 @@ bsga_params = dict(function=num_matching,\
                    maximize=False,
                    cmpr_map_dist=False)
 
+var_pga_params = dict(function=num_matching,\
+                  representation='proportional',\
+                  map_fxn=3,\
+                  min=0,
+                  max=10,
+                  n_noncoding_chars=1,\
+                  lenmin=30,
+                  lenmax=300,
+                  n_gens=200,\
+                  num_genes=10, \
+                  xov_op='homologous_onept',\
+                  mut_op='uniform_mutation',\
+                  homology_threshold=0,\
+                  window_size=5,\
+                  mut_rate=0.1,\
+                  xov_rate=0.8,
+                  maximize=False,
+                  cmpr_map_dist=False)
+
+
 pga_params = dict(function=num_matching,\
                   representation='proportional',\
                   map_fxn=3,\
@@ -39,8 +59,10 @@ pga_params = dict(function=num_matching,\
                   len=100,
                   n_gens=200,\
                   num_genes=10, \
-                  xov_op='twopt',\
+                  xov_op='homologous_onept',\
                   mut_op='uniform_mutation',\
+                  homology_threshold=0.5,\
+                  window_size=5,\
                   mut_rate=0.1,\
                   xov_rate=0.8,
                   maximize=False,
@@ -49,7 +71,7 @@ pga_params = dict(function=num_matching,\
 
 ga = geneticAlgorithm(**pga_params)
 
-rslts = ga.run(n=2)
+rslts = ga.run(n=1)
 
 dataframes = rslts.to_df()
 dataframes[0].to_csv('indvs.csv')

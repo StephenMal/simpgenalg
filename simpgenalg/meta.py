@@ -14,6 +14,9 @@ class geneticAlgorithm():
         # Get config
         self.config = kargs.pop('config',config(kargs.get('config_name',\
                                                             'simpgenalg')))
+        # Clear config
+        self.config.clear()
+
         # Get toolbox
         self.toolbox = kargs.pop('toolbox',sga_tb)
 
@@ -58,6 +61,8 @@ class geneticAlgorithm():
 
         # Run the structure and return the results
         self.log.info('Starting structure')
+
+        self.config.dflt.clear()
 
         return struct.run(*args, **kargs)
 

@@ -3,6 +3,8 @@ import unittest, random, logging
 
 class fixedVectorChromo(basicChromo):
 
+    __slots__ = ()
+
     def __init__(self, *args, **kargs):
 
         super().__init__(self, *args, **kargs)
@@ -56,11 +58,22 @@ class fixedVectorChromo(basicChromo):
 
 class vectorRepresentation(basicRepresentation):
 
+    __slots__ = ()
+
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
+        # If no chromosome provided, generate one
         if 'chromo' not in kargs:
             self.chromo = fixedVectorChromo(*args, **kargs)
+
+        # Figure out the max/min value
+        self.val_min = self.config.get('min', \
+                                dtype=self.get_chromo(return_copy=False).dtype)
+        self.val_max = self.config.get('max', \
+                                dtype=self.get_chromo(return_copy=False).dtype)
+        if self.val_max <= self.val_min:
+            self.log.exception('val_min must be greater than val_max')
 
     def _map(self, chromo):
         return chromo.to_list(return_copy=True)
@@ -76,12 +89,16 @@ class vectorRepresentation(basicRepresentation):
                                     fit=self.get_fit(),\
                                     attrs=self.get_attrs(return_copy=True),\
                                     len=self.get_chromo().__len__(),\
-                                    ID=self.get_ID())
+                                    ID=self.get_ID(),\
+                                    val_min=self.get_valmin(),\
+                                    val_max=self.get_valmax())
         test = vectorRepresentation(log_name=self.log.getLogKey(),\
                                 chromo=self.get_chromo(return_copy=True),\
                                 fit=self.get_fit(),\
                                 attrs=self.get_attrs(return_copy=True),\
-                                len=self.get_chromo().__len__())
+                                len=self.get_chromo().__len__(),\
+                                val_min=self.get_valmin(),\
+                                val_max=self.get_valmax())
         return test
 
 

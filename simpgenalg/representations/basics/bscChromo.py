@@ -250,20 +250,24 @@ class basicChromo(basicComponent):
     ''' min/max '''
     ''' Returns the minimum accepted value at an index '''
     def get_min(self, indx):
-        if isinstance(self.min, int):
+        if isinstance(self.min, (int, float)):
             return self.min
         elif isinstance(self.min, list):
             return self.min[indx]
         elif callable(self.min):
             return self.min(indx)
+        else:
+            raise TypeError
     ''' Returns the maximum accepted value at an index '''
     def get_max(self, indx):
-        if isinstance(self.max, int):
+        if isinstance(self.max, (int, float)):
             return self.max
         elif isinstance(self.max, list):
             return self.max[indx]
         elif callable(self.max):
             return self.max(indx)
+        else:
+            raise TypeError
     def getRange(self, indx):
         return (self.get_min(indx), self.get_max(indx))
 

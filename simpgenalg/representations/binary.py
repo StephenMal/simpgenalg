@@ -28,7 +28,7 @@ class fixedBinaryChromo(basicChromo):
 
         # Determine length limit
         if self.lenLim is not None:
-            if self.lenLim[0] != length and lenLim[1] != self.length:
+            if self.lenLim[0] != length and lenLim[1] != length:
                 self.log.exception('lenLim should be equal to length')
         else:
             self.lenLim = (length, length)
@@ -39,8 +39,7 @@ class fixedBinaryChromo(basicChromo):
         if 'vals' not in kargs and kargs.get('generate', True):
             self.generate()
 
-
-
+    # Returns a list of genes
     def get_split(self):
         return [self.vals[x:x+self.gene_size] for x in \
                     range(0, self.num_genes*self.gene_size, self.gene_size)]
@@ -53,28 +52,28 @@ class fixedBinaryChromo(basicChromo):
                                     hsh = self.hsh, \
                                     num_genes = self.num_genes, \
                                     gene_size = self.gene_size)
-
+    # Generate a chromosome
     def generate(self):
         self.set_chromo(choices((0,1), k=self.lenLim[0]))
 
+    # List of functions we cannot do since fixed bianry size
     def append(self, item):
         self.log.exception('Cannot append to a fixedBinaryChromo',\
                            err=NotImplementedError)
-
     def extend(self, item):
         self.log.exception('Cannot extend to a fixedBinaryChromo',\
                            err=NotImplementedError)
-
     def insert(self, item):
         self.log.exception('Cannot insert to a fixedBinaryChromo',\
                            err=NotImplementedError)
-
     def pop(self, indx):
         self.log.exception('Cannot pop from a fixedBinaryChromo',\
                            err=NotImplementedError)
 
 class binaryRepresentation(basicRepresentation):
 
+    __slots__ = ('dtype')
+    
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
@@ -84,13 +83,27 @@ class binaryRepresentation(basicRepresentation):
         if 'chromo' not in kargs:
             self.chromo = fixedBinaryChromo(*args, **kargs)
 
+        # Figure out min/max producable by mapping function
+        if self.dtype is int:
+            self.val_min, self.val_max = \
+                0, self._cnvrt_to_int([1]*self.chromo.gene_size)
+        elif self.dtype is float:
+            self.val_min, self.val_max = 0, 1
+        elif self.dtype is None:
+            self.val_min, self.val_max = None, None
+        else:
+            self.log.exception('dtype must be int or float', err=ValueError)
+
+    # Convert a list of 0s and 1s to a float value between 0 and 1
     def _cnvrt_to_float(self, lst):
         return sum([1/(2**indx) if x==1 else 0 for indx, x in enumerate(lst)])
-
+    # Convert a list of 0s and 1s to an int value between 0 and length of list
+    #   raised to the second power (0 - len(lst)^2)
     def _cnvrt_to_int(self, lst):
         return sum([(2**indx) if x==1 else 0 \
                                     for indx, x in enumerate(lst[::-1])])
-
+    # Apply mapping function to convert binary values to either float, ints or
+    #   just return the list of individual binary values
     def _map(self, chromo):
         if self.dtype is int:
             return [self._cnvrt_to_int(lst) for lst in chromo.get_split()]
@@ -98,3 +111,21 @@ class binaryRepresentation(basicRepresentation):
             return [self._cnvrt_to_float(lst) for lst in chromo.get_split()]
         elif self.dtype is None:
             return chromo.to_list(return_copy=True)
+    # Returns copy of the individual
+    def copy(self, copy_ID=False):
+        if copy_ID:
+            return binaryRepresentation(log_name=self.log.getLogKey(),\
+                                      chromo=self.get_chromo(return_copy=True),\
+                                      fit=self.get_fit(),\
+                                      attrs=self.get_attrs(return_copy=True),\
+                                      ID=self.get_ID(),\
+                                      val_min=self.get_valmin(),\
+                                      val_max=self.get_valmax(),\
+                                      dtype=self.dtype)
+        return binaryRepresentation(log_name=self.log.getLogKey(),\
+                                   chromo=self.get_chromo(return_copy=True),\
+                                   fit=self.get_fit(),\
+                                   attrs=self.get_attrs(return_copy=True),\
+                                   val_min=self.get_valmin(),\
+                                   val_max=self.get_valmax(),\
+                                   dtype=self.dtype)

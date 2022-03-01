@@ -297,6 +297,12 @@ class genResults(basicComponent):
             except:
                 stats[f'{key}.range'] = None
 
+        for key, item in self.get_best().items():
+            try:
+                stats[f'{key}.genbest'] = item
+            except:
+                stats[f'{key}.genbest'] = None
+
         # Adds correlation data if requested
         if incl_corrs:
             stats.update(self.calc_corr(flatten=True, corr_type=corr_type))

@@ -28,7 +28,7 @@ class proportionalChromo(basicChromo):
             else:
                 self.log.exception('Need to provide lenLim', err=ValueError)
 
-        self.min, self.max, self.dtype = 0, self.n_chars-1, int
+        self.min, self.max, self.dtype = 0, self.n_chars, int
 
         if 'vals' not in kargs and kargs.get('generate', True):
             self.generate()
@@ -47,11 +47,10 @@ class proportionalChromo(basicChromo):
                             self.returnCounter().items()}.__hash__()
         return self.hsh
 
-
 class proportionalRepresentation(basicRepresentation):
 
-    __slots__ = ('num_genes', 'n_noncoding_chars', 'map_fxn', '_map', \
-                    'val_min', 'val_max', 'n_chars')
+    __slots__ = ('num_genes', 'n_noncoding_chars', 'map_fxn', '_map', 'n_chars')
+
     def __init__(self, *args, **kargs):
 
         super().__init__(*args, **kargs)
