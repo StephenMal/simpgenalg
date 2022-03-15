@@ -18,6 +18,7 @@ class fixedBinaryChromo(basicChromo):
         if self.gene_size is None:
             self.gene_size = kargs.get('gene_size',\
                                     self.config.get('gene_size', dtype=int, min=1))
+
         # Determine length
         length = self.num_genes*self.gene_size
 
@@ -72,8 +73,8 @@ class fixedBinaryChromo(basicChromo):
 
 class binaryRepresentation(basicRepresentation):
 
-    __slots__ = ('dtype')
-    
+    __slots__ = ('dtype', 'sign_bit')
+
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
@@ -85,23 +86,55 @@ class binaryRepresentation(basicRepresentation):
 
         # Figure out min/max producable by mapping function
         if self.dtype is int:
-            self.val_min, self.val_max = \
-                0, self._cnvrt_to_int([1]*self.chromo.gene_size)
+            self.sign_bit = self.config.get('sign_bit', True, dtype=bool)
+
+            if self.sign_bit:
+                self.val_min = self._cnvrt_to_int([1]*self.chromo.gene_size)
+                self.val_max = self._cnvrt_to_int([0]+[1]*(self.chromo.gene_size-1))
+            else:
+                self.val_min, self.val_max = \
+                    0, self._cnvrt_to_int([1]*self.chromo.gene_size)
         elif self.dtype is float:
-            self.val_min, self.val_max = 0, 1
+            self.sign_bit = self.config.get('sign_bit', True, dtype=bool)
+            if self.sign_bit:
+                self.val_min, self.val_max = -1, 1
+            else:
+                self.val_min, self.val_max = 0, 1
+
         elif self.dtype is None:
-            self.val_min, self.val_max = None, None
+            self.val_min, self.val_max, self.sign_bit = None, None, None
         else:
             self.log.exception('dtype must be int or float', err=ValueError)
 
     # Convert a list of 0s and 1s to a float value between 0 and 1
     def _cnvrt_to_float(self, lst):
-        return sum([1/(2**indx) if x==1 else 0 for indx, x in enumerate(lst)])
+        if self.sign_bit:
+            if lst[0] == 0:
+                return sum([1/(2**indx) if x==1 else 0 \
+                                            for indx, x in enumerate(lst[1:], start=1)])
+            elif lst[0] == 1:
+                return -1*sum([1/(2**indx) if x==1 else 0 \
+                                            for indx, x in enumerate(lst[1:], start=1)])
+            else:
+                raise ValueError('Sign_bit must be 0 or 1')
+        else:
+            return sum([1/(2**indx) if x==1 else 0 \
+                            for indx, x in enumerate(lst, start=1)])
     # Convert a list of 0s and 1s to an int value between 0 and length of list
     #   raised to the second power (0 - len(lst)^2)
     def _cnvrt_to_int(self, lst):
-        return sum([(2**indx) if x==1 else 0 \
-                                    for indx, x in enumerate(lst[::-1])])
+        if self.sign_bit:
+            if lst[0] == 0:
+                return sum([(2**indx) if x==1 else 0 \
+                                            for indx, x in enumerate(lst[1::-1], start=1)])
+            elif lst[0] == 1:
+                return -1*sum([(2**indx) if x==1 else 0 \
+                                            for indx, x in enumerate(lst[1::-1], start=1)])
+            else:
+                raise ValueError('Sign-bit must be 0 or 1')
+        else:
+            return sum([(2**indx) if x==1 else 0 \
+                                    for indx, x in enumerate(lst[::-1], start=1)])
     # Apply mapping function to convert binary values to either float, ints or
     #   just return the list of individual binary values
     def _map(self, chromo):

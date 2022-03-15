@@ -60,6 +60,10 @@ class allResults(basicComponent):
                 for key, item in run_dct['pop_stats'].items():
                     pop_stats_dct.setdefault(key, \
                                 [None]*len(pop_stats_dct['_run'])).extend(item)
+                # Stores runbest at each generation throughout
+                for key, item in self.get_best().items():
+                    pop_stats_dct.setdefault(f'{key}.allbest', \
+                            [None]*len(pop_stats_dct['_run'])).extend([item]*len(run))
                 pop_dct['_run'].extend([run_num]*run.get_num_entries())
                 pop_stats_dct['_run'].extend([run_num]*len(run))
                 # Add num of generations to number of entries
@@ -155,6 +159,10 @@ class runResults(basicComponent):
             # Appends the lists
             for key, item in gen_dct['pop_stats'].items():
                 pop_stats.setdefault(key, [None]*len(pop_stats['_gen'])).append(item)
+            # Stores runbest at each generation throughout
+            for key, item in self.get_best().items():
+                pop_stats.setdefault(f'{key}.runbest', \
+                                    [None]*len(pop_stats['_gen'])).append(item)
 
             # Add gen number, one per population
             pop_dct['_gen'].extend([gen_num]*gen.get_size())

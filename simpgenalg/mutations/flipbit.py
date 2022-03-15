@@ -1,7 +1,11 @@
 from ..representations.basics import basicRepresentation
 from .basics import basicMutation
+import random
 
-class flipbitMutation():
+class flipbitMutation(basicMutation):
+
+    def __init__(self, *args, **kargs):
+        super().__init__(*args, **kargs)
 
     def mutate_indx(self, indv, indx=None, mut_rate=None):
         chromo = indv.get_chromo(return_copy=False)
@@ -19,10 +23,6 @@ class flipbitMutation():
 
     def mutate_chromo(self, indv, mut_rate=None):
         mut_rate = mut_rate if mut_rate is not None else self.mut_rate
-        indv.get_chromo().set_chromo([val if random.random()>=mut_rate else \
-                                        0 if val == 1 else 0 \
-                                        for indx, val in enumerate(chromo)])
-
         num_mut, upflips, downflips = 0,0,0
         chromo = indv.get_chromo(return_copy=False)
         random_chance = random.random

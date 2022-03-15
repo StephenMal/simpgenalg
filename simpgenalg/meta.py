@@ -25,6 +25,7 @@ class geneticAlgorithm():
 
         # Create the log
         self.log = simplog(self.config.get('log_name','simpgenalg',dtype=str))
+        self.log.clear()
         self.log.setLevel(self.config.get('log_lvl',20,dtype=int))
 
         if self.config.get('console_log',True, dtype=bool):

@@ -75,8 +75,8 @@ class proportionalRepresentation(basicRepresentation):
             # Save min / max
             self.n_chars = self.n_noncoding_chars + self.num_genes
             # Get gene min / max (seperate from other two maps as dflt is 0-1)
-            self.val_min = kargs.get('val_min',self.config.get('min',0, dtype=int))
-            self.val_max = kargs.get('val_max',self.config.get('max',1, dtype=int))
+            self.val_min = kargs.get('val_min',self.config.get('min',0, dtype=(int,float)))
+            self.val_max = kargs.get('val_max',self.config.get('max',1, dtype=(int,float)))
             # Verify correct gene min/max
             if self.val_min >= self.val_max:
                 self.log.exception('min cannot be >= max', err=ValueError)
@@ -88,10 +88,10 @@ class proportionalRepresentation(basicRepresentation):
             # Get gene min / max (No dflt for map1 and 2)
             self.val_min = kargs.get('val_min', None)
             if self.val_min is None:
-                self.val_min = self.config.get('min', dtype=int)
+                self.val_min = self.config.get('min', dtype=(int,float))
             self.val_max = kargs.get('val_max', None)
             if self.val_max is None:
-                self.val_max = self.config.get('max', dtype=int)
+                self.val_max = self.config.get('max', dtype=(int,float))
             # Verify correct gene min/max
             if self.val_min >= self.val_max:
                 self.log.exception('min cannot be >= max', err=ValueError)

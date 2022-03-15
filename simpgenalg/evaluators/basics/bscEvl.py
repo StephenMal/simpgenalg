@@ -45,17 +45,18 @@ class basicEvaluator(basicComponent):
         for indv in btch:
             self.evaluate(indv, **kargs)
 
-    def compare_mapped_distance(self, pop):
+    def compare_mapped_distance(self, pop, dist_meth='euclidean'):
         if 'scipy' not in sys.modules:
             self.log.exception('Scipy needed to find distance between '+\
                                 'individuals.', err=ModuleNotFoundError)
 
         indv_maps = [(indv, indv.get_mapped()) for indv in pop]
 
-        dist_mat = squareform(pdist)
+        dist_mat = squareform(pdist([indv.get_mapped() for indv in pop], \
+                                        metric=dist_meth))
 
-
-
+        for i, indv1 in enumerate(pop):
+            indv1.set_attr('avg_dist', mean(dist_mat[i]))
 
     # Returns maximum or minimum individual
     def get_max(self):
