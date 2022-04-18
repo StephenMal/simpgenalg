@@ -1,7 +1,6 @@
 from .other.tlbx import sga_tb
 from .other import basicComponent
 from simpcfg import config
-from simplogger import simplog
 from simptoolbox import toolbox
 from .structures.basics import basicStructure
 import logging
