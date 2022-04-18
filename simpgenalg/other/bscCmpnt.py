@@ -1,18 +1,30 @@
 from simplogger import simplog
 from simpcfg import config
 from simptoolbox import toolbox
+from .cstm_logger import cstm_logger
 
 class basicComponent():
 
     __slots__ = ('config', 'toolbox', 'log', 'runsafe')
 
     def __init__(self, *args, **kargs):
-        self.log = kargs.get('log',\
-                        simplog(kargs.get('log_name','simpgenalg')))
-        self.config = kargs.get('config',\
-                        config(kargs.get('config_name','simpgenalg')))
-        self.toolbox = kargs.get('toolbox',\
-                        toolbox(kargs.get('toolbox_name','simpgenalg')))
+
+        self.config = kargs.get('config')
+        if self.config is None:
+            self.config = config(kargs.get('config_name', 'simpgenalg'))
+
+        # Try to load in logger or use a basic custom logger
+        self.log = kargs.get('logger')
+        if self.log is None:
+            log_lvl = kargs.get('log_lvl')
+            if log_lvl is None:
+                log_lvl = self.config.get('log_lvl',20,dtype=int)
+            self.log = cstm_logger(log_lvl=log_lvl)
+
+        self.toolbox = kargs.get('toolbox')
+        if self.toolbox is None:
+            self.toolbox = toolbox(kargs.get('toolbox_name', 'simpgenalg'))
+
         self.runsafe = kargs.get('runsafe', None)
 
         if self.runsafe is None:
@@ -21,7 +33,10 @@ class basicComponent():
             except:
                 self.runsafe = True
 
-
+    def __del__(self):
+        self.log, self.config, self.toolbox, self.runsafe = \
+                                                    None, None, None, None
+        #super().__del__()
 
     def _is_iter(self, obj):
         try:

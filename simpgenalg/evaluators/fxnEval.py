@@ -11,6 +11,10 @@ class functionEvaluator(basicEvaluator):
         self.function = self.config.get('function', callable=True)
         self.send_list = self.config.get('send_list',True, dtype=bool)
 
+    def __del__(self):
+        self.function = None
+        super().__del__()
+
     def evaluate(self, indv, **kargs):
 
         # Try reading the cache

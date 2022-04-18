@@ -84,7 +84,7 @@ class vectorRepresentation(basicRepresentation):
     def copy(self, copy_ID=False):
         chromo_copy = self.get_chromo(return_copy=True)
         if copy_ID:
-            test = vectorRepresentation(log=self.log,\
+            test = vectorRepresentation(logger=self.log,\
                                     chromo=self.get_chromo(return_copy=True),\
                                     fit=self.get_fit(),\
                                     attrs=self.get_attrs(return_copy=True),\
@@ -92,7 +92,7 @@ class vectorRepresentation(basicRepresentation):
                                     ID=self.get_ID(),\
                                     val_min=self.get_valmin(),\
                                     val_max=self.get_valmax())
-        test = vectorRepresentation(log_name=self.log.getLogKey(),\
+        test = vectorRepresentation(logger=self.log,\
                                 chromo=self.get_chromo(return_copy=True),\
                                 fit=self.get_fit(),\
                                 attrs=self.get_attrs(return_copy=True),\

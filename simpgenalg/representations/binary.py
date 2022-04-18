@@ -64,7 +64,7 @@ class fixedBinaryChromo(basicChromo):
     def extend(self, item):
         self.log.exception('Cannot extend to a fixedBinaryChromo',\
                            err=NotImplementedError)
-    def insert(self, item):
+    def insert(self, index, item):
         self.log.exception('Cannot insert to a fixedBinaryChromo',\
                            err=NotImplementedError)
     def pop(self, indx):
@@ -147,7 +147,7 @@ class binaryRepresentation(basicRepresentation):
     # Returns copy of the individual
     def copy(self, copy_ID=False):
         if copy_ID:
-            return binaryRepresentation(log_name=self.log.getLogKey(),\
+            return binaryRepresentation(logger=self.log,\
                                       chromo=self.get_chromo(return_copy=True),\
                                       fit=self.get_fit(),\
                                       attrs=self.get_attrs(return_copy=True),\
@@ -155,7 +155,7 @@ class binaryRepresentation(basicRepresentation):
                                       val_min=self.get_valmin(),\
                                       val_max=self.get_valmax(),\
                                       dtype=self.dtype)
-        return binaryRepresentation(log_name=self.log.getLogKey(),\
+        return binaryRepresentation(logger=self.log,\
                                    chromo=self.get_chromo(return_copy=True),\
                                    fit=self.get_fit(),\
                                    attrs=self.get_attrs(return_copy=True),\

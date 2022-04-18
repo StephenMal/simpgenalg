@@ -80,7 +80,7 @@ class generationStructure(basicStructure):
                                         pop_stat_dct=parents.get_popstats(\
                                                         return_copy=True,\
                                                         compile_indv_attrs=False))
-                self.log.info(f'Gen:{gen+1}\t' + \
+                self.log.info(f'Gen:{gen+1}   ' + \
                         run_results[-1].get_gen_strs(*tracking_vars,round=2))
 
                 # Crete next generation (if not last generation)
@@ -96,6 +96,12 @@ class generationStructure(basicStructure):
 
             # Clear objects for restart
             clear()
+
+        del selector
+        del evaluator
+        del parents
+        del children
+
         return all_results
 
 

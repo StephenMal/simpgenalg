@@ -4,6 +4,8 @@ import random
 
 class flipbitMutation(basicMutation):
 
+    __slots__ = ()
+
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 

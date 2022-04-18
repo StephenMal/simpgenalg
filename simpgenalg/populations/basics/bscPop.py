@@ -29,6 +29,13 @@ class basicPopulation(basicComponent):
         self.indv_attrs = []
         self.pop_stats = {}
 
+    def __del__(self):
+        del self.poplst
+        del self.indv_attrs
+        del self.pop_stats
+        self.rep = None
+        super().__del__()
+
     # Allows getting an individual from the population
     def __getitem__(self, indx):
         return self.poplst.__getitem__(indx)

@@ -133,11 +133,12 @@ class basicEvaluator(basicComponent):
     def _set_none(self, indv, fit):
         return
     def _set_bcache(self, indv, fit):
-        return self.cache.get(indv, self.sCache.get(indv,None))
+        self.cache[indv] = fit
+        self.sCache[indv] = fit
     def _set_scache(self, indv, fit):
-        return self.sCache.get(indv, None)
+        self.sCache[indv] = fit
     def _set_ncache(self, indv, fit):
-        return self.cache.get(indv, None)
+        self.cache[indv] = fit
 
     # Sets up cache functions and caches
     def _setup_caches(self):

@@ -3,7 +3,9 @@
 from .vector import vectorRepresentation
 from .binary import binaryRepresentation
 from .proportional import proportionalRepresentation
+from .floating import floatingRepresentation
 
 representations_dct = {'vector':vectorRepresentation,\
                        'binary':binaryRepresentation,\
-                       'proportional':proportionalRepresentation}
+                       'proportional':proportionalRepresentation,\
+                       'floating':floatingRepresentation}

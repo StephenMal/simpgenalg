@@ -32,6 +32,13 @@ class basicChromo(basicComponent):
         self.fit = kargs.get('fit',None)
         self.hsh = kargs.get('hsh',None)
 
+    def __del__(self):
+        del self.lenLim
+        del self.vals
+        self.min, self.max, self.fit, self.hsh, self.dtype = \
+                                                    None, None, None, None, None
+        super().__del__()
+
     ''' Chromosome Generation '''
     ''' Generates a list of random chromosome values '''
     def generate(self):

@@ -27,6 +27,16 @@ class basicRepresentation(basicComponent):
         self.val_min = kargs.get('val_min', None)
         self.val_max = kargs.get('val_max', None)
 
+    def __del__(self):
+        del self.chromo
+        del self.mapped
+        del self.attrs
+        del self.val_min
+        del self.val_max
+        self.ID, self.hsh = None, None
+        super().__del__()
+
+
     ''' chromosome '''
     # Returns chromosome
     def get_chromo(self, return_copy=True):

@@ -109,7 +109,7 @@ class proportionalRepresentation(basicRepresentation):
              self.__len__(), self.val_min, self.val_max
         for char in range(0, self.n_chars):
             freq = cntr.get(char,0)
-            self.set_attr(f'char_{char}_%', freq/self.__len__())
+            #self.set_attr(f'char_{char}_%', freq/self.__len__())
             lst.append(vmin + (freq / length)*(vmax-vmin))
         return lst
 
@@ -118,8 +118,8 @@ class proportionalRepresentation(basicRepresentation):
                     chromo.returnCounter(), [], self.val_min, self.val_max
         for char in range(0, self.n_chars, 2):
             pos, neg = cntr.get(char,0), cntr.get(char+1,0)
-            self.set_attr(f'char_{char}_%', pos/self.__len__())
-            self.set_attr(f'char_{char+1}_%', neg/self.__len__())
+            #self.set_attr(f'char_{char}_%', pos/self.__len__())
+            #self.set_attr(f'char_{char+1}_%', neg/self.__len__())
             lst.append(vmin + (pos/(pos+neg))*(vmax-vmin) \
                             if pos+neg!=0 else 0)
         return lst
@@ -129,8 +129,8 @@ class proportionalRepresentation(basicRepresentation):
                     chromo.returnCounter(), [], self.val_min, self.val_max
         for char in range(0, self.n_chars, 2):
             pos, neg = cntr.get(char,0), cntr.get(char+1,0)
-            self.set_attr(f'char_{char}_pct', pos/self.__len__())
-            self.set_attr(f'char_{char+1}_pct', neg/self.__len__())
+            #self.set_attr(f'char_{char}_pct', pos/self.__len__())
+            #self.set_attr(f'char_{char+1}_pct', neg/self.__len__())
             lst.append(vmin + (pos/neg if (pos<neg and neg!=0) \
                                 else (neg/pos if pos!=0 else 0))*(vmax-vmin))
         return lst
@@ -138,7 +138,7 @@ class proportionalRepresentation(basicRepresentation):
     def copy(self, copy_ID=False):
         if copy_ID:
             return proportionalRepresentation(\
-                                    log_name=self.log.getLogKey(),\
+                                    logger=self.log,\
                                     num_genes=self.num_genes,\
                                     n_noncoding_chars=self.n_noncoding_chars,\
                                     val_min=self.val_min,\
@@ -149,7 +149,7 @@ class proportionalRepresentation(basicRepresentation):
                                     attrs=self.get_attrs(return_copy=True),\
                                     ID=self.get_ID())
         return proportionalRepresentation(\
-                                log_name=self.log.getLogKey(),\
+                                logger=self.log,\
                                 num_genes=self.num_genes,\
                                 n_noncoding_chars=self.n_noncoding_chars,\
                                 val_min=self.val_min,\

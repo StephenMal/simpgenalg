@@ -6,16 +6,22 @@ from simptoolbox import toolbox
 from .structures.basics import basicStructure
 import logging
 
-class geneticAlgorithm():
+class geneticAlgorithm(basicComponent):
 
     __slots__ = ('config', 'toolbox', 'log')
 
     def __init__(self, *args, **kargs):
+
+        super().__init__(*args, **kargs)
+        '''
         # Get config
         self.config = kargs.pop('config',config(kargs.get('config_name',\
                                                             'simpgenalg')))
+
+        '''
         # Clear config
         self.config.clear()
+
 
         # Get toolbox
         self.toolbox = kargs.pop('toolbox',sga_tb)
@@ -24,6 +30,7 @@ class geneticAlgorithm():
         self.config.loadDict(kargs, update=True)
 
         # Create the log
+        '''
         self.log = simplog(self.config.get('log_name','simpgenalg',dtype=str))
         self.log.clear()
         self.log.setLevel(self.config.get('log_lvl',20,dtype=int))
@@ -36,14 +43,15 @@ class geneticAlgorithm():
                                                 dtype=int),\
                                    format=self.config.get('console_format',4))
         #self.log.addHandler(htype='stream')
+        '''
 
         self.log.debug('Initializing geneticAlgorithm')
 
     # Loads the structure of the GA, then runs it and returns results
     def run(self, *args, **kargs):
 
-        self.log.info(f'Configuration:\n{self.config}')
         self.log.debug('Called run for geneticAlgorithm')
+        self.log.info(f'Configuration:\n{self.config}')
 
         # Get structure, defaults to generational GA
         self.log.debug('Getting structure for geneticAlgorithm')

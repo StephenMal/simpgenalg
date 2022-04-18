@@ -37,7 +37,7 @@ class floatingBinaryChromo(basicChromo):
 class floatingRepresentation(basicRepresentation):
 
     __slots__ = ('template', 'gene_id_len', 'gene_ids','gene_size', 'num_genes',\
-                    'start_tag', 'end_tag', 'dtype')
+                    'start_tag', 'end_tag', 'dtype', 'sign_bit')
 
     # Variables needed to be accessed by all floating individuals
     cls_start_tag, cls_end_tag, cls_gene_ids, cls_gene_id_len, cls_template = \
@@ -60,6 +60,8 @@ class floatingRepresentation(basicRepresentation):
         self.dtype = kargs.get('dtype',None)
         if self.dtype is None:
             self.dtype = self.config.get('dtype', options=(int, float, None))
+            if self.dtype is not None:
+                self.sign_bit = self.config.get('sign_bit', False)
 
         # Determine value min / max
         if self.dtype is int:
@@ -144,14 +146,52 @@ class floatingRepresentation(basicRepresentation):
         if 'chromo' not in kargs:
             self.chromo = floatingBinaryChromo(*args, **kargs)
 
-    # Convert to float
+    def copy(self, copy_ID=False):
+        if copy_ID:
+            return floatingRepresentation(logger=self.log,\
+                                          chromo=self.get_chromo(return_copy=True),\
+                                          fit=self.get_fit(),\
+                                          attrs=self.get_attrs(return_copy=True),\
+                                          ID=self.get_ID(),\
+                                          val_min=self.get_valmin(),\
+                                          val_max=self.get_valmax(),\
+                                          dtype=self.dtype)
+        return floatingRepresentation(logger=self.log,\
+                                      chromo=self.get_chromo(return_copy=True),\
+                                      fit=self.get_fit(),\
+                                      attrs=self.get_attrs(return_copy=True),\
+                                      val_min=self.get_valmin(),\
+                                      val_max=self.get_valmax(),\
+                                      dtype=self.dtype)
+    # Convert a list of 0s and 1s to a float value between 0 and 1
     def _cnvrt_to_float(self, lst):
-        return sum([1/(2**indx) if x==1 else 0 for indx, x in enumerate(lst)])
-
-    # Convert to int
+        if self.sign_bit:
+            if lst[0] == 0:
+                return sum([1/(2**indx) if x==1 else 0 \
+                                            for indx, x in enumerate(lst[1:], start=1)])
+            elif lst[0] == 1:
+                return -1*sum([1/(2**indx) if x==1 else 0 \
+                                            for indx, x in enumerate(lst[1:], start=1)])
+            else:
+                raise ValueError('Sign_bit must be 0 or 1')
+        else:
+            return sum([1/(2**indx) if x==1 else 0 \
+                            for indx, x in enumerate(lst, start=1)])
+    # Convert a list of 0s and 1s to an int value between 0 and length of list
+    #   raised to the second power (0 - len(lst)^2)
     def _cnvrt_to_int(self, lst):
-        return sum([(2**indx) if x==1 else 0 \
-                                    for indx, x in enumerate(lst[::-1])])
+        if self.sign_bit:
+            if lst[0] == 0:
+                return sum([(2**indx) if x==1 else 0 \
+                                            for indx, x in enumerate(lst[1::-1], start=1)])
+            elif lst[0] == 1:
+                return -1*sum([(2**indx) if x==1 else 0 \
+                                            for indx, x in enumerate(lst[1::-1], start=1)])
+            else:
+                raise ValueError('Sign-bit must be 0 or 1')
+        else:
+            return sum([(2**indx) if x==1 else 0 \
+                                    for indx, x in enumerate(lst[::-1], start=1)])
 
     def _map(self, chromo):
 
