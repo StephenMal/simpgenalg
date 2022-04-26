@@ -1,6 +1,5 @@
 from ...other import basicComponent
 from ...representations.basics import basicRepresentation
-from simplogger import simplog
 import random
 class basicMutation(basicComponent):
 

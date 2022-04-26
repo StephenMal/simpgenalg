@@ -1,6 +1,4 @@
 from ...other import basicComponent
-from simplogger import simplog
-import logging
 from collections import Counter
 import unittest
 import random

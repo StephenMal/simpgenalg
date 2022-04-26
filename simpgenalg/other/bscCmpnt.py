@@ -1,4 +1,3 @@
-from simplogger import simplog
 from simpcfg import config
 from simptoolbox import toolbox
 from .cstm_logger import cstm_logger

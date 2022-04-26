@@ -68,8 +68,12 @@ pga_params = dict(function=num_matching,\
                   maximize=False,
                   cmpr_map_dist=False)
 
+fga_params = dict(function=num_matching,\
+                  representation='floating',\
+                  min=0)
 
-ga = geneticAlgorithm(**pga_params)
+
+ga = geneticAlgorithm(**vga_params)
 
 rslts = ga.run(n=1)
 

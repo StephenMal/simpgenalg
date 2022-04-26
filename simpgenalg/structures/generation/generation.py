@@ -97,6 +97,8 @@ class generationStructure(basicStructure):
             # Clear objects for restart
             clear()
 
+        self.log.info('Completed run, returning results')
+
         del selector
         del evaluator
         del parents

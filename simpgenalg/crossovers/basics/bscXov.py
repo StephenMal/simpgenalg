@@ -1,4 +1,3 @@
-from simplogger import simplog
 from ...representations.basics import basicChromo
 from ...other import basicComponent
 import random, unittest

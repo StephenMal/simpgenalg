@@ -1,9 +1,7 @@
 from ...other import basicComponent
 from .bscChromo import basicChromo
-from simplogger import simplog
 from statistics import mean, stdev
 import unittest
-import logging
 
 class basicRepresentation(basicComponent):
 

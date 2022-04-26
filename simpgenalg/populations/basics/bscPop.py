@@ -1,4 +1,3 @@
-from simplogger import simplog
 from ...other import basicComponent
 from ...representations.basics import basicChromo, basicRepresentation
 from statistics import mean, stdev
